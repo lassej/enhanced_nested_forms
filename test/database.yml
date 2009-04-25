@@ -1,0 +1,4 @@
+enhanced_nested_forms:
+  adapter: sqlite3
+  dbfile: test/test.sqlite3
+
