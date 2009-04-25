@@ -1,13 +1,66 @@
 EnhancedNestedForms
 ===================
 
-Introduction goes here.
-
 
 Example
 =======
 
-Example goes here.
+Say you have two models:
+
+
+  class Project < ActiveRecord::Base
+    column :name
+
+    has_many :tasks
+
+    accepts_nested_attributes_for :tasks
+  end
+
+  class Task < ActiveRecord::Base
+    column :project_id
+    column :name
+
+    belongs_to :project
+  end
+
+
+Without this plugin you either have to use javascript to add new tasks to a project or you must
+insert some empty Task objects and use the :reject_if option of the accepts_netsted_attributes_for
+method to prevent the empty objects from being saved. Both alternatives are quite ugly.
+
+Using the enhanced_nested_forms plugin allows you to add a button to your form which triggers building
+a new associated object and prevents the whole object tree from being saved.
+
+  submit_tag "Add Task", :name => "project[_build_tasks]"
+
+or
+
+  image_submit_tag "plus.png", :name => "project[_build_tasks]"
+
+
+The controller code can stay as it was. If a build-something button was clicked, a before_save callback
+will return false and the form will be re-rendered with the unsaved object.
+
+  def create
+    @project = Project.new( params[:project])
+    if @project.save
+      redirect_to @project
+    else
+      render "new"
+    end
+  end
+
+  def update
+    @project = Project.find( params[:id])
+    if @project.update_attributes( params[:project])
+      redirect_to @project
+    else
+      render "new"
+    end
+  end
+
+
+Helper methods for the view, more tests and documentation will follow.
 
 
 Copyright (c) 2009 [name of plugin creator], released under the MIT license
