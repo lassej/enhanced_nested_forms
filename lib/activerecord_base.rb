@@ -53,7 +53,27 @@ class ActiveRecord::Base
         end
         attr_accessor :_create_#{association_name}_x, :_create_#{association_name}_y
       }
+
     end
+
+    def mark_for_deletion
+      @_marked_for_deletion = true
+    end
+
+    def marked_for_deletion?
+      @_marked_for_deletion ? true : false
+    end
+
+    def assign_to_or_mark_for_destruction_with_mark_for_deletion_flag( record, attributes, allow_destroy)
+      attrs = attributes.dup
+      if ActiveRecord::ConnectionAdapters::Column.value_to_boolean( attrs.delete( '_mark_for_deletion'))
+        record.mark_for_deletion
+        attrs["_delete"] = true
+      end
+
+      assign_to_or_mark_for_destruction_without_mark_for_deletion_flag( record, attrs, allow_destroy)
+    end
+    alias_method_chain :assign_to_or_mark_for_destruction, :mark_for_deletion_flag
 
     class_eval %{
       def nested_attributes_of_associations_prevent_save?
@@ -62,9 +82,11 @@ class ActiveRecord::Base
           association = self.send( association_name)
           case reflection.macro
           when :has_one, :belongs_to
-            association.nested_attributes_prevent_save? if association.respond_to?( :nested_attributes_prevent_save?)
+            association.try( :nested_attributes_prevent_save?) || association.try( :marked_for_deletion?)
           when :has_many, :has_and_belongs_to_many
-            association.any? { |a| a.nested_attributes_prevent_save? if a.respond_to?( :nested_attributes_prevent_save?) }
+            association.any? { |a|
+              a.try( :nested_attributes_prevent_save?) || a.marked_for_deletion?
+            }
           end
         end
       end

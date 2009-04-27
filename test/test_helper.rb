@@ -23,14 +23,14 @@ class Project < ActiveRecord::Base
   has_many :tasks
   belongs_to :user
 
-  accepts_nested_attributes_for :tasks, :user
+  accepts_nested_attributes_for :tasks, :user, :allow_destroy => true
 end
 
 class Task < ActiveRecord::Base
   belongs_to :project
   has_many :users
 
-  accepts_nested_attributes_for :users
+  accepts_nested_attributes_for :users, :allow_destroy => true
 end
 
 class User < ActiveRecord::Base

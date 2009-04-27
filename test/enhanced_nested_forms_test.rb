@@ -73,13 +73,42 @@ class EnhancedNestedFormsTest < ActiveSupport::TestCase
     assert ! project.save
   end
 
+  test "delete still works" do
+    project = Project.create({
+      :name         => "TestProject",
+      :_create_tasks => "something"
+    })
+
+    project.reload
+    task = project.tasks.first
+
+    project.update_attributes({ :tasks_attributes => { task.id.to_s => { "_delete" => '1', :id => task.id.to_s } } })
+    project.reload
+
+    assert_nil project.tasks.first
+  end
+
+  test "soft-delete works" do
+    project = Project.create({
+      :name         => "TestProject",
+      :_create_tasks => "something"
+    })
+
+    project.reload
+    task = project.tasks.first
+
+    project.attributes = { :tasks_attributes => { task.id.to_s => { "_mark_for_deletion" => '1', :id => task.id.to_s } } }
+
+    assert project.tasks.first.marked_for_deletion?
+    assert project.tasks.first.marked_for_destruction?
+    assert project.nested_attributes_prevent_save?
+  end
+
   test "ie image button bug" do
     project = Project.new({
       :name           => "TestProject",
       "_build_user.x" => "something"
     })
-
-    assert_not_nil project.user
   end
 
 end

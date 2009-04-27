@@ -1,6 +1,11 @@
 EnhancedNestedForms
 ===================
 
+Install
+=======
+
+  script/plugin install git://github.com/lassej/enhanced_nested_forms.git
+
 
 Example
 =======
@@ -9,8 +14,6 @@ Say you have two models:
 
 
   class Project < ActiveRecord::Base
-    column :name
-
     has_many :tasks
 
     accepts_nested_attributes_for :tasks
@@ -18,7 +21,6 @@ Say you have two models:
 
   class Task < ActiveRecord::Base
     column :project_id
-    column :name
 
     belongs_to :project
   end
@@ -63,4 +65,4 @@ will return false and the form will be re-rendered with the unsaved object.
 Helper methods for the view, more tests and documentation will follow.
 
 
-Copyright (c) 2009 [name of plugin creator], released under the MIT license
+Copyright (c) 2009 [Lasse Jansen], released under the MIT license
